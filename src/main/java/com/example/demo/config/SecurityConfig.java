@@ -58,6 +58,7 @@ public class SecurityConfig {
 
                     auth.requestMatchers(HttpMethod.POST, "/api/onboarding/apply").permitAll();
                     auth.requestMatchers(HttpMethod.POST, "/api/products/*/reviews").permitAll();
+                    auth.requestMatchers("/api/orders/Booking").permitAll();
                     // 4. PUBLIC - General Viewing (GET requests)
                     auth.requestMatchers(HttpMethod.GET, "/api/products/**").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/rentals/**").permitAll();

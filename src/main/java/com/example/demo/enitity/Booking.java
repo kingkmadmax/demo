@@ -1,50 +1,44 @@
 package com.example.demo.enitity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import java.time.LocalDate;
+import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "booking")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Booking {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    // --- Identification ---
-    private String userId;
-    private String name;
-    private String email;
-    private String phone;
-    private String fid; // Found in your screenshot
+        @ManyToOne(fetch = FetchType.EAGER)
+        @JoinColumn(name = "product_id", nullable = false)
+        private RentalProduct product;
 
-    // --- Images ---
-    private String faceImage;
-    private String idImage;
-    private String image;
-    private LocalDate receiveDate;
-    private LocalDate returnDate;
-    // Product thumbnail
+        private String userId; // Keycloak UUID String
+        private String customerName;
+        private String email;
+        private String phone;
+        private String pickupLocation;
+        private String fidaId; // National ID Proxy
 
-    // --- Product Details ---
-    private Long productId;
-    private String productName;
-    private Integer quantity;
-    private Double price;
-    private Double deposit;
-    private Double totalPrice;
+        @Column(columnDefinition = "TEXT")
+        private String faceImageUrl;
 
-    // --- Dates & Logistics ---
-    private String location;
-    private String rentalStartDate; // Stored as varchar(255) per screenshot
+        @Column(columnDefinition = "TEXT")
+        private String idImageUrl;
 
-   // Stored as date
-    private LocalDateTime bookingDate; // Stored as timestamp
+        private LocalDateTime receiveDate;
+        private LocalDateTime returnDate;
+        private Integer rentalDays;
+        private String status = "PENDING";
 
-    private String status;
+        private LocalDateTime createdAt;
+
+        @PrePersist
+        protected void onCreate() {
+                this.createdAt = LocalDateTime.now();
+        }
 }
