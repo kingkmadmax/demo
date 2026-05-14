@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.enitity.Booking;
+import com.example.demo.enitity.ProductSituation;
 import com.example.demo.enitity.RentalProduct;
 import com.example.demo.repository.BookingRepository;
 import com.example.demo.repository.RentalRepository;
@@ -25,6 +26,7 @@ public class BookingService {
         RentalProduct managedProduct = productRepository.findById(booking.getProduct().getId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
+        managedProduct.setSituation(ProductSituation.RENTED);
         booking.setProduct(managedProduct);
         Booking saved = bookingRepository.save(booking);
         System.out.println("Saved successfully with ID: " + saved.getId());

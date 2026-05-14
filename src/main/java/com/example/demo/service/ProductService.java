@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.enitity.ProductSituation;
 import com.example.demo.enitity.RentalProduct;
 import com.example.demo.repository.RentalRepository;
 import lombok.RequiredArgsConstructor;

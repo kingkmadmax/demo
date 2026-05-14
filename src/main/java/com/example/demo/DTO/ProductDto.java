@@ -3,7 +3,7 @@ package com.example.demo.DTO;
 import lombok.Data;
 
 @Data
-public class ProductDto {
+public class  ProductDto {
 
     private String imageUrl;
     private String name;

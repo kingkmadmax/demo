@@ -37,7 +37,6 @@ public class RentalProduct {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
-
     @PreUpdate
     public void onUpdate() {
         updatedAt = LocalDateTime.now();
@@ -46,6 +45,8 @@ public class RentalProduct {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    private ProductSituation Situation = ProductSituation.AVAILABLE;
     // Helper method to calculate average rating
     public Double getAverageRating() {
         if (reviews.isEmpty()) return 0.0;
