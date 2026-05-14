@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/moderation")
-@CrossOrigin(origins = "http://localhost:3000") // Allows your Next.js app to connect
 public class ModerationController {
 
     @Autowired

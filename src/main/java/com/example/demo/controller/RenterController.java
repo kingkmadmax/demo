@@ -15,7 +15,6 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3002","http://localhost:3001"})
 public class RenterController {
 
     private final RenterService renterService;

@@ -11,7 +11,6 @@ import com.example.demo.service.RenterApplicationService;
 
 @RestController
 @RequestMapping("/api/onboarding")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3002","http://localhost:3001"})
 public class OnboardingController {
 
     private static final Logger logger = LoggerFactory.getLogger(OnboardingController.class);

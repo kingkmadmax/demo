@@ -17,7 +17,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3002","http://localhost:3001"})
 @RequiredArgsConstructor
 @Slf4j
 public class ProductController {

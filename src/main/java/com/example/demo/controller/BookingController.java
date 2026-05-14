@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookings")
-@CrossOrigin(origins = "http://localhost:3000") // Allows your Next.js frontend to connect
 public class BookingController {
 
     @Autowired
