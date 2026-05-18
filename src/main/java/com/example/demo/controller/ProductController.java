@@ -68,7 +68,7 @@ public class ProductController {
 
     @GetMapping("/all")
     public ResponseEntity<List<RentalProduct>> getAllProducts() {
-        List<RentalProduct> products = productService.getAllProducts();
+        List<RentalProduct> products = productService.getAllProducts(pageable);
         return ResponseEntity.ok(products);
     }
 

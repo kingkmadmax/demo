@@ -42,6 +42,9 @@ public class RentalProduct {
         updatedAt = LocalDateTime.now();
     }
 
+
+    @Column(name = "trending_score", columnDefinition = "DOUBLE PRECISION DEFAULT 0.0")
+    private Double trendingScore = 0.0;
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 

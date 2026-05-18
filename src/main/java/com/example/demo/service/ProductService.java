@@ -5,6 +5,8 @@ import com.example.demo.enitity.RentalProduct;
 import com.example.demo.repository.RentalRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;       // <-- ADD THIS IMPORT
+import org.springframework.data.domain.Pageable;   // <-- ADD THIS IMPORT
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,14 +23,18 @@ public class ProductService {
         log.info("Fetching listings for user: {}", userId);
         return rentalRepository.findByOwnerId(userId);
     }
-    public List<RentalProduct> getAllProducts() {
-        log.info("Fetching all marketplace products");
-        return rentalRepository.findAll();
+
+    // FIX: Accept Pageable as a parameter and return Page instead of List
+    public Page<RentalProduct> getAllProducts(Pageable pageable) {
+        log.info("Fetching all marketplace products with pagination");
+        return rentalRepository.findAll(pageable);
     }
+
     public Optional<RentalProduct> getProductById(Long id) {
         log.info("Fetching product with ID: {}", id);
         return rentalRepository.findById(id);
     }
+
     public RentalProduct createProduct(
             String imageUrl,
             String name,
@@ -52,7 +58,6 @@ public class ProductService {
         if (userId == null || userId.isEmpty()) {
             throw new IllegalArgumentException("Owner ID is required");
         }
-
 
         RentalProduct product = new RentalProduct();
         product.setOwnerId(userId);
