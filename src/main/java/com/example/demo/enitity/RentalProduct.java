@@ -2,6 +2,8 @@ package com.example.demo.enitity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.BatchSize;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +47,8 @@ public class RentalProduct {
 
     @Column(name = "trending_score", columnDefinition = "DOUBLE PRECISION DEFAULT 0.0")
     private Double trendingScore = 0.0;
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @BatchSize(size = 15)
     private List<Review> reviews = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

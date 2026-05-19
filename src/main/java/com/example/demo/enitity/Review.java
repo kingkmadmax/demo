@@ -2,13 +2,14 @@ package com.example.demo.enitity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
-
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reviews")
-@Data
+@Getter
+@Setter
 public class Review {
 
     @Id
@@ -16,15 +17,18 @@ public class Review {
     private Long id;
 
     private String author;
-    private int rating; // 1 to 5
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String comment;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    @JsonIgnore // Prevents infinite loops in JSON
-    private RentalProduct product;
+    private Integer rating;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    // The proper way: Link back to the parent Product
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    @JsonIgnore
+    private RentalProduct product;
 }

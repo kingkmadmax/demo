@@ -14,17 +14,17 @@ public interface RentalRepository extends JpaRepository<RentalProduct, Long> {
 
     List<RentalProduct> findByOwnerId(String ownerId);
 
-    @EntityGraph(attributePaths = {"reviews"})
-    // For the Marketplace: Filter products by category
-    List<RentalProduct> findByCategory(String category);
+    List<RentalProduct> findByOwnerIdAndCategory(String ownerId, String category);
 
-    // For the Search Bar: Find items by name (case-insensitive)
-    List<RentalProduct> findByNameContainingIgnoreCase(String name);
-
-    // For Location-based filtering (important for Addis Ababa markets)
-    List<RentalProduct> findByLocation(String location);
-    // For calculating  the trading componets
     @EntityGraph(attributePaths = {"reviews"})
     Page<RentalProduct> findAll(Pageable pageable);
-    List<RentalProduct> findByOwnerIdAndCategory(String ownerId, String category);
+
+    @EntityGraph(attributePaths = {"reviews"})
+    Page<RentalProduct> findByCategory(String category, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"reviews"})
+    Page<RentalProduct> findByNameContainingIgnoreCase(String name, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"reviews"})
+    Page<RentalProduct> findByLocation(String location, Pageable pageable);
 }

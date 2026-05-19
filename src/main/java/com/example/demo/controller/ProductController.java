@@ -8,6 +8,10 @@ import com.example.demo.repository.ReviewRepository;
 import com.example.demo.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -67,9 +71,15 @@ public class ProductController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<RentalProduct>> getAllProducts() {
-        List<RentalProduct> products = productService.getAllProducts(pageable);
-        return ResponseEntity.ok(products);
+    public ResponseEntity<PagedModel<RentalProduct>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<RentalProduct> productsPage = productService.getAllProducts(pageable);
+
+        // Wrap the Page object into a PagedModel
+        return ResponseEntity.ok(new PagedModel<>(productsPage));
     }
 
     @PostMapping(value = "/add", consumes = "application/json")
