@@ -2,13 +2,16 @@ package com.example.demo.service;
 
 import com.example.demo.enitity.ProductSituation;
 import com.example.demo.enitity.RentalProduct;
+import com.example.demo.enitity.Review;
 import com.example.demo.repository.RentalRepository;
+import com.example.demo.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;       // <-- ADD THIS IMPORT
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;   // <-- ADD THIS IMPORT
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +22,8 @@ import java.util.Optional;
 public class ProductService {
 
     private final RentalRepository rentalRepository;
+    private final ReviewRepository reviewRepository;
+
 
     public List<RentalProduct> getMyListings(String userId) {
         log.info("Fetching listings for user: {}", userId);
@@ -33,6 +38,22 @@ public class ProductService {
     public Optional<RentalProduct> getProductById(Long id) {
         log.info("Fetching product with ID: {}", id);
         return rentalRepository.findById(id);
+    }
+    public Page<RentalProduct> getProductsByCategory(String category, Pageable pageable) {
+        log.info("Fetching marketplace products for category: {} with pagination", category);
+        return rentalRepository.findByCategory(category, pageable);
+    }
+    @Transactional
+    public Review addReviewToProduct(Long productId, Review review) {
+        RentalProduct product = rentalRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        // Establish the double-sided link
+        review.setProduct(product);
+        product.getReviews().add(review);
+
+        // Save the review directly
+        return reviewRepository.save(review);
     }
 
     public RentalProduct createProduct(

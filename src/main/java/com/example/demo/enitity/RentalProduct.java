@@ -1,5 +1,6 @@
 package com.example.demo.enitity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.BatchSize;
@@ -53,7 +54,7 @@ public class RentalProduct {
 
     @Enumerated(EnumType.STRING)
     private ProductSituation Situation = ProductSituation.AVAILABLE;
-    // Helper method to calculate average rating
+    @JsonManagedReference
     public Double getAverageRating() {
         if (reviews.isEmpty()) return 0.0;
         return reviews.stream().mapToInt(Review::getRating).average().orElse(0.0);

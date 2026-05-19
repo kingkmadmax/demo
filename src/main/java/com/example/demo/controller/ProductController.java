@@ -54,33 +54,34 @@ public class ProductController {
 
         RentalProduct product = rentalRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-
-
-
-
         rentalRepository.delete(product);
         return ResponseEntity.ok("Product deleted successfully");
     }
+
     @PostMapping("/{productId}/reviews")
     public ResponseEntity<Review> addReview(@PathVariable Long productId, @RequestBody Review review) {
-        return rentalRepository.findById(productId).map(product -> {
-            review.setProduct(product);
-            Review savedReview = reviewRepository.save(review);
-            return ResponseEntity.ok(savedReview);
-        }).orElse(ResponseEntity.notFound().build());
+        Review savedReview = productService.addReviewToProduct(productId, review);
+        return ResponseEntity.ok(savedReview);
     }
-
     @GetMapping("/all")
-    public ResponseEntity<PagedModel<RentalProduct>> getAllProducts(
+    public ResponseEntity<Page<RentalProduct>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "8") int size, // Match your frontend size 8
+            @RequestParam(required = false) String category) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<RentalProduct> productsPage = productService.getAllProducts(pageable);
+        Page<RentalProduct> productsPage;
 
-        // Wrap the Page object into a PagedModel
-        return ResponseEntity.ok(new PagedModel<>(productsPage));
+        // If a category filter is sent from Next.js, use the new service method
+        if (category != null && !category.trim().isEmpty()) {
+            productsPage = productService.getProductsByCategory(category, pageable);
+        } else {
+            productsPage = productService.getAllProducts(pageable);
+        }
+
+        return ResponseEntity.ok(productsPage);
     }
+
 
     @PostMapping(value = "/add", consumes = "application/json")
     public ResponseEntity<RentalProduct> addProduct(

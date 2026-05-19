@@ -1,6 +1,6 @@
 package com.example.demo.enitity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +29,6 @@ public class Review {
     // The proper way: Link back to the parent Product
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    @JsonIgnore
+    @JsonBackReference
     private RentalProduct product;
 }
