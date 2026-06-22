@@ -16,7 +16,7 @@ public class Booking {
         @ManyToOne(fetch = FetchType.EAGER)
         @JoinColumn(name = "product_id", nullable = false)
         private RentalProduct product;
-
+        private String ownerId;
         private String userId; // Keycloak UUID String
         private String customerName;
         private String email;

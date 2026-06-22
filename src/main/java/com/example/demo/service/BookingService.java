@@ -31,14 +31,14 @@ public class BookingService {
         Booking saved = bookingRepository.save(booking);
         System.out.println("Saved successfully with ID: " + saved.getId());
         return saved;
-
-
-
-
     }
+
+    @Transactional(readOnly = true)
     public List<Booking> getBookingsByProductOwner(String ownerId) {
         return bookingRepository.findByProductOwnerId(ownerId);
     }
+
+    @Transactional
     public boolean acceptBooking(Long id) {
         Optional<Booking> bookingOptional = bookingRepository.findById(id);
         if (bookingOptional.isPresent()) {
@@ -47,8 +47,10 @@ public class BookingService {
             bookingRepository.save(booking);
             return true;
         }
-        return false; // Returns false if ID doesn't exist
+        return false;
     }
+
+    @Transactional
     public boolean declineBooking(Long id) {
         return bookingRepository.findById(id).map(booking -> {
             booking.setStatus("DECLINED");
@@ -57,7 +59,7 @@ public class BookingService {
         }).orElse(false);
     }
 
-    // Delete record (Record is removed from DB)
+    @Transactional
     public boolean deleteBooking(Long id) {
         if (bookingRepository.existsById(id)) {
             bookingRepository.deleteById(id);
@@ -70,7 +72,6 @@ public class BookingService {
     public List<Booking> getAllOrders() {
         return bookingRepository.findAll();
     }
-
 
     @Transactional(readOnly = true)
     public List<Booking> getOrdersByUser(String userId) {
