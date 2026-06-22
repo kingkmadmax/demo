@@ -2,10 +2,11 @@ package com.example.demo.service;
 
 import com.example.demo.DTO.ProductResponseDto;
 import com.example.demo.enitity.RentalProduct;
+import com.example.demo.enitity.Renter;
 import com.example.demo.enitity.Review;
 import com.example.demo.repository.RentalRepository;
+import com.example.demo.repository.RenterRepository; // 1. Added import
 import com.example.demo.repository.ReviewRepository;
-import com.example.demo.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,11 +24,13 @@ public class ProductService {
 
     private final RentalRepository rentalRepository;
     private final ReviewRepository reviewRepository;
-    private final ReviewService reviewService;
+    private final RenterRepository renterRepository; // 2. Added repository injection
+
 
     public List<RentalProduct> getMyListings(String userId) {
         log.info("Fetching listings for user: {}", userId);
-        return rentalRepository.findByOwnerId(userId);
+        // 3. Changed from findByOwnerId to findByOwnerKeycloakId
+        return rentalRepository.findByOwnerKeycloakId(userId);
     }
 
     public Page<RentalProduct> getAllProducts(Pageable pageable) {
@@ -40,12 +43,20 @@ public class ProductService {
         return rentalRepository.findById(id);
     }
 
+    // ==================== NEW METHOD: Fetch Single Product DTO for Frontend ====================
+    public ProductResponseDto getProductDetails(Long id) {
+        log.info("Fetching flat product details with owner name for ID: {}", id);
+        RentalProduct product = rentalRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        return convertToDto(product);
+    }
+
     public Page<RentalProduct> getProductsByCategory(String category, Pageable pageable) {
         log.info("Fetching marketplace products for category: {} with pagination", category);
         return rentalRepository.findByCategory(category, pageable);
     }
 
-    // ==================== UPDATED METHOD (Flat DTO) ====================
+    // ==================== UPDATED METHOD (Sends Owner Details) ====================
     public Page<ProductResponseDto> getAllProductsWithRating(Pageable pageable, String category) {
         Page<RentalProduct> productPage;
 
@@ -58,27 +69,38 @@ public class ProductService {
         log.info("Fetching products with average rating - Page: {}, Category: {}",
                 pageable.getPageNumber(), category);
 
-        return productPage.map(product -> {
-            double avgRating = reviewService.getMeanRatingForProduct(product.getId());
+        // 4. Cleaned up to use our reusable converter method
+        return productPage.map(this::convertToDto);
+    }
 
-            ProductResponseDto dto = new ProductResponseDto();
+    // ==================== REUSABLE CONVERTER (Maps Entity to DTO) ====================
+    private ProductResponseDto convertToDto(RentalProduct product) {
+        ProductResponseDto dto = new ProductResponseDto();
 
-            dto.setId(product.getId());
-            dto.setOwnerId(product.getOwnerId());
-            dto.setName(product.getName());
-            dto.setPrice(product.getPrice());
-            dto.setCategory(product.getCategory());
-            dto.setLocation(product.getLocation());
-            dto.setCondition(product.getCondition());
-            dto.setDeposit(product.getDeposit());
-            dto.setDescription(product.getDescription());
-            dto.setImageUrl(product.getImageUrl());
-            dto.setSituation(product.getSituation() != null ? product.getSituation().name() : null); // Adjust if needed
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setPrice(product.getPrice());
+        dto.setCategory(product.getCategory());
+        dto.setLocation(product.getLocation());
+        dto.setCondition(product.getCondition());
+        dto.setDeposit(product.getDeposit());
+        dto.setDescription(product.getDescription());
+        dto.setImageUrl(product.getImageUrl());
+        dto.setSituation(product.getSituation() != null ? product.getSituation().name() : null);
 
-            dto.setAverageRating(Math.round(avgRating * 100.0) / 100.0);
+        // Uses the entity's built-in calculation method
+        double avgRating = product.getAverageRating();
+        dto.setAverageRating(Math.round(avgRating * 100.0) / 100.0);
 
-            return dto;
-        });
+        // 5. EXTRACT AND SEND OWNER DATA TO FRONTEND RIGHT HERE
+        Renter owner = product.getOwner();
+        if (owner != null) {
+            dto.setOwnerId(owner.getKeycloakId());
+            dto.setOwnerName(owner.getFullName());  // <-- Sends the name to the frontend!
+
+        }
+
+        return dto;
     }
     // =================================================================
 
@@ -93,32 +115,25 @@ public class ProductService {
         return reviewRepository.save(review);
     }
 
+    // ==================== UPDATED CREATION METHOD ====================
     public RentalProduct createProduct(
-            String imageUrl,
-            String name,
-            String category,
-            Double price,
-            Double deposit,
-            String condition,
-            String location,
-            String description,
+            String imageUrl, String name, String category, Double price,
+            Double deposit, String condition, String location, String description,
             String userId
     ) {
+        if (imageUrl == null || imageUrl.isEmpty()) throw new IllegalArgumentException("Image URL is required");
+        if (name == null || name.isEmpty()) throw new IllegalArgumentException("Product name is required");
+        if (userId == null || userId.isEmpty()) throw new IllegalArgumentException("Owner ID is required");
 
-        if (imageUrl == null || imageUrl.isEmpty()) {
-            throw new IllegalArgumentException("Image URL is required");
-        }
-
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Product name is required");
-        }
-
-        if (userId == null || userId.isEmpty()) {
-            throw new IllegalArgumentException("Owner ID is required");
-        }
+        // 6. Look up the real Renter profile from the database before storing the relation link
+        Renter owner = renterRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Renter profile not found for Keycloak ID: " + userId));
 
         RentalProduct product = new RentalProduct();
-        product.setOwnerId(userId);
+
+
+        product.setOwner(owner);
+
         product.setImageUrl(imageUrl);
         product.setName(name);
         product.setCategory(category);
@@ -128,8 +143,7 @@ public class ProductService {
         product.setLocation(location);
         product.setDescription(description);
 
-        log.info("Saving product for user {}", userId);
-
+        log.info("Saving product linked directly to owner database object");
         return rentalRepository.save(product);
     }
 }

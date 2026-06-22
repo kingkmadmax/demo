@@ -5,7 +5,6 @@ import com.example.demo.DTO.RefreshRequest;
 import com.example.demo.DTO.UserAuthControllerDTO;
 import com.example.demo.Exception.InvalidCredentialsException;
 import com.example.demo.Exception.UserAlreadyExistsException;
-import com.example.demo.service.KeycloakAdminService;
 import com.example.demo.service.UserAuthService;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;

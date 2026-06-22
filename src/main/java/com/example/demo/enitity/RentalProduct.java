@@ -18,7 +18,9 @@ public class RentalProduct {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", referencedColumnName = "keycloakId", nullable = false)
+    private Renter owner;
 
     private String name;
     private Double price;
@@ -26,7 +28,6 @@ public class RentalProduct {
     private String location;
     private String condition;
     private Double deposit;
-
     @Column(length = 2000)
     private String description;
 
@@ -45,15 +46,16 @@ public class RentalProduct {
         updatedAt = LocalDateTime.now();
     }
 
-
     @Column(name = "trending_score", columnDefinition = "DOUBLE PRECISION DEFAULT 0.0")
     private Double trendingScore = 0.0;
+
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @BatchSize(size = 15)
     private List<Review> reviews = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private ProductSituation Situation = ProductSituation.AVAILABLE;
+
     @JsonManagedReference
     public Double getAverageRating() {
         if (reviews.isEmpty()) return 0.0;

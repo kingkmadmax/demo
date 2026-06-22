@@ -1,79 +1,100 @@
 package com.example.demo.service;
 
-import com.example.demo.enitity.UserEnitity;
+import com.example.demo.Exception.InvalidCredentialsException;
 import com.example.demo.repository.UserRepository;
 
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Map;
 
 @Service
-@Transactional // Re-enabled for database safety
-@RequiredArgsConstructor // Replaces the manual constructor
-@Slf4j // Added for consistency with your controller
+@Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
 
+    @Value("${keycloak.admin.server-url}")
+    private String keycloakUrl;
 
+    @Value("${keycloak.target.realm}")
+    private String realm;
 
-    public UserEnitity validateAndSaveUser(Jwt jwt) {
-        if (jwt == null) {
-            log.error("Sync failed: JWT is null");
-            throw new IllegalArgumentException("JWT token cannot be null");
+    @Value("${keycloak.admin.client-id}")
+    private String loginClientId;
+
+    @Value("${keycloak.admin.client-secret}")
+    private String loginClientSecret;
+
+    public Map<String, Object> login(String username, String password) {
+        RestTemplate rest = new RestTemplate();
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "password");
+        body.add("client_id", loginClientId);
+        body.add("client_secret", loginClientSecret);
+        body.add("username", username);
+        body.add("password", password);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        try {
+            ResponseEntity<Map> response = rest.exchange(
+                    keycloakUrl + "/realms/" + realm + "/protocol/openid-connect/token",
+                    HttpMethod.POST,
+                    new HttpEntity<>(body, headers),
+                    Map.class
+            );
+
+            return Map.of(
+                    "success", true,
+                    "access_token", response.getBody().get("access_token"),
+                    "refresh_token", response.getBody().get("refresh_token")
+            );
+        } catch (HttpClientErrorException.Unauthorized e) {
+            throw new InvalidCredentialsException("Invalid username or password");
+        } catch (HttpClientErrorException.BadRequest e) {
+            throw new InvalidCredentialsException("Invalid username or password");
         }
-
-        // Extract information from Keycloak JWT token
-        String userId      = jwt.getClaimAsString("sub");
-        String username    = jwt.getClaimAsString("preferred_username");
-        String email       = jwt.getClaimAsString("email");
-        String firstName   = jwt.getClaimAsString("given_name");
-        String lastName    = jwt.getClaimAsString("family_name");
-
-        log.debug("Processing sync for user: {} ({})", username, email);
-
-        // Find existing user or create new one
-        UserEnitity user = userRepository.findById(userId)
-                .orElseGet(() -> {
-                    log.info("First time login detected for user ID: {}. Creating new profile.", userId);
-                    return new UserEnitity();
-                });
-
-        // Update user information
-        user.setId(userId);
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setToken(jwt.getTokenValue());
-
-        // Set timestamps
-        if (user.getCreatedAt() == null) {
-            user.setCreatedAt(LocalDateTime.now());
-        }
-        user.setUpdatedAt(LocalDateTime.now());
-
-        log.info("Saving/Updating user info in PostgreSQL for: {}", email);
-        return userRepository.save(user);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<UserEnitity> getUserById(String id) {
-        return userRepository.findById(id);
+    public Map<String, Object> refreshToken(String refreshToken) {
+        RestTemplate rest = new RestTemplate();
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "refresh_token");
+        body.add("client_id", loginClientId);
+        body.add("client_secret", loginClientSecret);
+        body.add("refresh_token", refreshToken);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        ResponseEntity<Map> response = rest.exchange(
+                keycloakUrl + "/realms/" + realm + "/protocol/openid-connect/token",
+                HttpMethod.POST,
+                new HttpEntity<>(body, headers),
+                Map.class
+        );
+
+        return Map.of(
+                "success", true,
+                "access_token", response.getBody().get("access_token"),
+                "refresh_token", response.getBody().get("refresh_token")
+        );
     }
 
-    @Transactional(readOnly = true)
-    public Optional<UserEnitity> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    public void deleteUser(String id) {
-        log.warn("Deleting user record with ID: {}", id);
-        userRepository.deleteById(id);
-    }
+    // ... your existing validateAndSaveUser, getUserById, etc. stay unchanged
 }

@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.enitity.UserEnitity;
-import com.example.demo.service.UserService;
+import com.example.demo.service.UserServic;
 import com.example.demo.util.SecurityUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.Map;
 @Slf4j
 public class UserController {
 
-    private final UserService userService;
+    private final UserServic userService;
 
     @PostMapping("/validate-token")
     public ResponseEntity<?> validateAndSaveUser(

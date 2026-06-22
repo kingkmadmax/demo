@@ -11,6 +11,7 @@ public class ProductResponseDto {
 
     private Long id;
     private String ownerId;
+    private String ownerName;
     private String name;
     private Double price;
     private String category;
@@ -22,6 +23,5 @@ public class ProductResponseDto {
     private String Situation;
     private String status;
     private double averageRating;
-
 
 }

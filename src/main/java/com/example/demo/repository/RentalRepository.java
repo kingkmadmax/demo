@@ -12,9 +12,16 @@ import java.util.List;
 @Repository
 public interface RentalRepository extends JpaRepository<RentalProduct, Long> {
 
-    List<RentalProduct> findByOwnerId(String ownerId);
+    // Fix 1: Changed from findByOwnerId to match Keycloak property mapping
+    @EntityGraph(attributePaths = {"owner"})
+    List<RentalProduct> findByOwnerKeycloakId(String keycloakId);
 
-    List<RentalProduct> findByOwnerIdAndCategory(String ownerId, String category);
+    // This one was already perfectly structured!
+    @EntityGraph(attributePaths = {"owner"})
+    List<RentalProduct> findByOwnerKeycloakIdAndCategory(String keycloakId, String category);
+
+
+    // ---- Paging Queries ----
 
     @EntityGraph(attributePaths = {"reviews"})
     Page<RentalProduct> findAll(Pageable pageable);

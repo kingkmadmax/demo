@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/onboarding")
+@RequestMapping("/api/onboarding/")
 @RequiredArgsConstructor
 @Slf4j
 
