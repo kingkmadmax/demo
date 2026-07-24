@@ -45,7 +45,6 @@ public class ProductService {
 
     // ==================== NEW METHOD: Fetch Single Product DTO for Frontend ====================
     public ProductResponseDto getProductDetails(Long id) {
-        log.info("Fetching flat product details with owner name for ID: {}", id);
         RentalProduct product = rentalRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         return convertToDto(product);

@@ -19,7 +19,7 @@ public class KeycloakConfig {
     @Value("${keycloak.admin.username}")
     private String username;
 
-    @Value("${keycloak.admin.password:12345}")   // Default value if not in properties
+    @Value("${keycloak.admin.password}")   // Default value if not in properties
     private String password;
 
     @Value("${keycloak.admin.client-secret}")

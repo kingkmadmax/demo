@@ -62,7 +62,6 @@ public class SecurityConfig {
                     // 4. PUBLIC - General Viewing (GET requests)
                     auth.requestMatchers(HttpMethod.GET, "/api/products/**").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/rentals/**").permitAll();
-
                     // 5. CATCH-ALL (Must be at the very bottom)
                     auth.anyRequest().authenticated();
 

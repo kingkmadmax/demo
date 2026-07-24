@@ -45,12 +45,17 @@ public class ProductController {
         List<RentalProduct> myProducts = productService.getMyListings(userId);
         return ResponseEntity.ok(myProducts);
     }
+    // to get product Detail
     @GetMapping("/{id}")
-    public ResponseEntity<RentalProduct> getProductById(@PathVariable Long id) {
-        return productService.getProductById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
+        try {
+            ProductResponseDto dto = productService.getProductDetails(id); // ✅ already exists in service
+            return ResponseEntity.ok(dto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id, Authentication authentication) {
         String currentUserId = authentication.getName();
@@ -80,7 +85,7 @@ public class ProductController {
     @GetMapping("/all")
     public ResponseEntity<Page<ProductResponseDto>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String category) {
 
         Pageable pageable = PageRequest.of(page, size);
